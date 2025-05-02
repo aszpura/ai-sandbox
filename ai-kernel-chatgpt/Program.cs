@@ -23,11 +23,39 @@ var chatService = kernel.GetRequiredService<IChatCompletionService>();
 
 // Create chat history (you can add system prompts, user messages, etc.)
 ChatHistory chat = [];
-
 chat.AddSystemMessage("You are a helpful assistant.");
-chat.AddUserMessage("What is captial city of Canada?");
 
-// Get response
-var reply = await chatService.GetChatMessageContentAsync(chat);
-Console.WriteLine(reply?.Content);
+Console.WriteLine("Simple AI Chat Agent (type 'exit' to quit)");
+Console.WriteLine("----------------------------------------");
+
+while (true)
+{
+    // Get user input
+    Console.Write("You: ");
+    var userInput = Console.ReadLine();
+
+    if (string.Equals(userInput, "exit", StringComparison.OrdinalIgnoreCase))
+    {
+        break;
+    }
+
+    if (string.IsNullOrEmpty(userInput))
+    {
+        continue;
+    }
+
+    chat.AddUserMessage(userInput);
+
+    try
+    {
+        var response = await chatService.GetChatMessageContentAsync(chat,  new PromptExecutionSettings());
+
+        Console.WriteLine($"AI: {response.Content}");
+        chat.AddAssistantMessage(response.Content ?? string.Empty);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error: {ex.Message}");
+    }
+}
 
