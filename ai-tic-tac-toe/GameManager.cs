@@ -89,16 +89,21 @@ public class GameManager(IAIPlayerService aiPlayerService)
         Console.WriteLine("\nAI is thinking...");
         string aiMove = await _aiPlayerService.GetNextMoveAsync(_board, AIPlayer);
         var result = _board.UpdateBoard(AIPlayer, aiMove);
-        
+
+        if (!result.IsSuccess && result.ErrorMessage == "This position is already taken")
+        {
+            Console.WriteLine($"AI made an invalid move: {aiMove} is already taken. Falling back to local strategy...");
+            aiMove = AIPlayerService.GetStrategicFallbackMove(_board.Cells);
+            result = _board.UpdateBoard(AIPlayer, aiMove);
+        }
+
         if (result.IsSuccess)
         {
             Console.WriteLine($"AI plays: {aiMove}");
             _board.Display();
+            return;
         }
-        else
-        {
-            // This shouldn't happen if AI is implemented correctly
-            Console.WriteLine($"AI made an invalid move: {result.ErrorMessage}");
-        }
+                
+        Console.WriteLine($"AI made an invalid move: {result.ErrorMessage}");
     }
 }

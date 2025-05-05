@@ -3,11 +3,12 @@ namespace ai_tic_tac_toe;
 public class Board
 {
     private readonly List<string> _cells;
+    private int? _lastPosition = null;
 
     public Board()
     {
         // Initialize empty board with 9 cells
-        _cells = Enumerable.Repeat(" ", 9).ToList();
+        _cells = [.. Enumerable.Repeat(" ", 9)];
     }
 
     public List<string> Cells => _cells;
@@ -15,11 +16,18 @@ public class Board
     public void Display()
     {
         Console.WriteLine();
-        Console.WriteLine($" {_cells[0]} | {_cells[1]} | {_cells[2]} ");
+
+        // Inline function to get cell content with color if it's the last position
+        string GetCell(int index) =>
+            index == _lastPosition
+            ? $"\x1b[32m {_cells[index]} \x1b[0m" // Green color for last position
+            : $" {_cells[index]} ";
+
+        Console.WriteLine($"{GetCell(0)}|{GetCell(1)}|{GetCell(2)}");
         Console.WriteLine("---+---+---");
-        Console.WriteLine($" {_cells[3]} | {_cells[4]} | {_cells[5]} ");
+        Console.WriteLine($"{GetCell(3)}|{GetCell(4)}|{GetCell(5)}");
         Console.WriteLine("---+---+---");
-        Console.WriteLine($" {_cells[6]} | {_cells[7]} | {_cells[8]} ");
+        Console.WriteLine($"{GetCell(6)}|{GetCell(7)}|{GetCell(8)}");
         Console.WriteLine();
     }
 
@@ -61,8 +69,9 @@ public class Board
             return new UpdateResult(false, "This position is already taken");
         }
 
-        // Update the board
+        // Update the board and store last position
         _cells[index] = player;
+        _lastPosition = index;
         return new UpdateResult(true);
     }
 
@@ -95,5 +104,23 @@ public class Board
     {
         // This assumes check for win happend already
         return !_cells.Contains(" ");
+    }
+
+    public List<string> GetTakenPositions()
+    {
+        var takenPositions = new List<string>();
+        
+        for (int i = 0; i < _cells.Count; i++)
+        {
+            if (_cells[i] != " ")
+            {
+                // Convert index to board position (A1-C3 format)
+                char row = (char)('A' + (i / 3));
+                char col = (char)('1' + (i % 3));
+                takenPositions.Add($"{row}{col}");
+            }
+        }
+        
+        return takenPositions;
     }
 }
