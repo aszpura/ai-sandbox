@@ -23,7 +23,7 @@ Strategic guidelines:
 2. Corner positions (A1,A3,C1,C3) are next best - especially if opponent has center
 
 Rules:
-- Respond ONLY with a valid move position (e.g. 'A1', 'B2', etc.) and not taken position.
+- Respond ONLY with a valid move position (e.g. 'A1', 'B2', etc.).
 - Winning requires 3 in a row (horizontal, vertical, or diagonal)";
     public AIPlayerService(Kernel kernel)
     {
@@ -37,8 +37,8 @@ Rules:
         chat.AddSystemMessage(SystemMessage);
 
         // Create visual board representation for better context
-        var visualBoard = GetVisualBoard(board.Cells);
-        string prompt = $@"You are playing as {player}. Current board state:
+        var visualBoard = GetBoardAsString(board.Cells);
+        string prompt = $@"You are playing as {player}. Current board state (first three values represent first row, next three represent second row and last thre values represent last row) ):
 
 {visualBoard}
 
@@ -46,7 +46,7 @@ Analyze the board and make your next move. Consider:
 - Can you win in this move?
 - Do you need to block opponent's winning move?
 
-Respond with just the position (e.g. 'A1').
+Respond with just the single position (e.g. 'A1').
 Never choose a position that is already taken. List of already taken positions: {string.Join(",", board.GetTakenPositions())}.";
         chat.AddUserMessage(prompt);
 
@@ -54,7 +54,7 @@ Never choose a position that is already taken. List of already taken positions: 
         {
             var response = await _chatService.GetChatMessageContentAsync(chat, new PromptExecutionSettings());
             string move = (response.Content ?? "").Trim().ToUpper();
-            Console.WriteLine($"AI Response: {move}");
+            //Console.WriteLine($"AI Response: {move}");
             // Validate that the response is in correct format
             if (move.Length == 2 && move[0] >= 'A' && move[0] <= 'C' && move[1] >= '1' && move[1] <= '3')
             {
@@ -70,6 +70,8 @@ Never choose a position that is already taken. List of already taken positions: 
             return GetStrategicFallbackMove(board.Cells);
         }
     }
+
+    private string GetBoardAsString(List<string> cells) => string.Join(",", cells);
 
     private string GetVisualBoard(List<string> cells)
     {
