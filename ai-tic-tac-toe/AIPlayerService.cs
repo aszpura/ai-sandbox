@@ -43,8 +43,8 @@ Rules:
 {visualBoard}
 
 Analyze the board and make your next move. Consider:
-- Can you win in this move?
-- Do you need to block opponent's winning move?
+1. Can you win in this move?
+2. Can you block the opponent from winning in their next move?
 
 Respond with just the single position (e.g. 'A1').
 Never choose a position that is already taken. List of already taken positions: {string.Join(",", board.GetTakenPositions())}.";
@@ -54,7 +54,7 @@ Never choose a position that is already taken. List of already taken positions: 
         {
             var response = await _chatService.GetChatMessageContentAsync(chat, new PromptExecutionSettings());
             string move = (response.Content ?? "").Trim().ToUpper();
-            //Console.WriteLine($"AI Response: {move}");
+            
             // Validate that the response is in correct format
             if (move.Length == 2 && move[0] >= 'A' && move[0] <= 'C' && move[1] >= '1' && move[1] <= '3')
             {
@@ -75,11 +75,12 @@ Never choose a position that is already taken. List of already taken positions: 
 
     private string GetVisualBoard(List<string> cells)
     {
-        return $@"{cells[0]}|{cells[1]}|{cells[2]}
--+-+-
-{cells[3]}|{cells[4]}|{cells[5]}
--+-+-
-{cells[6]}|{cells[7]}|{cells[8]}";
+        return $@"
+        {cells[0]}|{cells[1]}|{cells[2]}
+        -+-+-
+        {cells[3]}|{cells[4]}|{cells[5]}
+        -+-+-
+        {cells[6]}|{cells[7]}|{cells[8]}";
     }
 
     public static string GetStrategicFallbackMove(List<string> cells)
