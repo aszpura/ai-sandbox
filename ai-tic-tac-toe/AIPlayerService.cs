@@ -13,6 +13,8 @@ public class AIPlayerService : IAIPlayerService
     private readonly Kernel _kernel;
     private readonly IChatCompletionService _chatService;
 
+    private ChatHistory Chat = [];  
+
     private const string SystemMessage = @"You are playing Tic Tac Toe as an expert AI player. The board uses this coordinate system:
 A1|A2|A3
 B1|B2|B3
@@ -29,13 +31,11 @@ Rules:
     {
         _kernel = kernel;
         _chatService = kernel.GetRequiredService<IChatCompletionService>();
+        Chat.AddSystemMessage(SystemMessage);
     }
 
     public async Task<string> GetNextMoveAsync(Board board, string player)
     {
-        ChatHistory chat = [];
-        chat.AddSystemMessage(SystemMessage);
-
         // Create visual board representation for better context
         var visualBoard = GetBoardAsString(board.Cells);
         string prompt = $@"You are playing as {player}. Current board state (first three values represent first row, next three represent second row and last thre values represent last row) ):
@@ -48,11 +48,11 @@ Analyze the board and make your next move. Consider:
 
 Respond with just the single position (e.g. 'A1').
 Never choose a position that is already taken. List of already taken positions: {string.Join(",", board.GetTakenPositions())}.";
-        chat.AddUserMessage(prompt);
+        Chat.AddUserMessage(prompt);
 
         try
         {
-            var response = await _chatService.GetChatMessageContentAsync(chat, new PromptExecutionSettings());
+            var response = await _chatService.GetChatMessageContentAsync(Chat);
             string move = (response.Content ?? "").Trim().ToUpper();
             
             // Validate that the response is in correct format
